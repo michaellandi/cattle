@@ -53,8 +53,8 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
 		switch (DB.get()) {
 			case "mysql":
 				return ArchaiusUtil.getString("db.cattle.mysql." + setting);
-			case "sqlserver":
-				return ArchaiusUtil.getString("db.cattle.sqlserver." + setting);
+			case "mssql":
+				return ArchaiusUtil.getString("db.cattle.mssql." + setting);
 			default:
 				return ArchaiusUtil.getString("db.cattle.postgres." + setting); 
 				
@@ -180,7 +180,7 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
     		case "mysql":
     			return new ProcessBuilder("mysql", "--skip-column-names", "-s", "-uroot", "-e",
     	                "SELECT SUM(data_length)/power(1024,2) AS dbsize_mb FROM information_schema.tables WHERE table_schema='cattle' GROUP BY table_schema;");
-    		case "sqlserver":
+    		case "mssql":
     			return new ProcessBuilder("mssql", "--help");
     		default:
     			return new ProcessBuilder("psql", "cattle", "cattle", "-t", "-q", "-c",
@@ -203,7 +203,7 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
     	{
 	    	case "mysql":
 	    		return new ProcessBuilder("mysqldump", "-uroot", "cattle");
-	    	case "sqlserver":
+	    	case "mssql":
 	    		return new ProcessBuilder("mssql", "--help");
 	    	default:
 	    		return new ProcessBuilder("pg_dump", "-Fc", "-Ucattle", "cattle");
