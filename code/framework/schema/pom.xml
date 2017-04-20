@@ -24,7 +24,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jooq</groupId>
+            <groupId>org.jooq.pro</groupId>
             <artifactId>jooq</artifactId>
         </dependency>
         <dependency>
