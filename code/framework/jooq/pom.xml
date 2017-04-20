@@ -13,8 +13,11 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jooq</groupId>
+            <groupId>org.jooq.pro</groupId>
             <artifactId>jooq</artifactId>
+            <systemPath>/Users/mlandi/Downloads/jOOQ-3.3.0/jOOQ-lib/jooq-3.3.0.jar</systemPath>
+            <version>3.3.0</version>
+            <scope>system</scope>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
