@@ -18,15 +18,16 @@ export CATTLE_HA_HOST_REGISTRATION_URL=${hostRegistrationUrl}
 export CATTLE_HA_CONTAINER_PREFIX=${containerPrefix}
 
 <#if db == "mysql">
-export CATTLE_DB_CATTLE_MYSQL_HOST=${dbHost}
-export CATTLE_DB_CATTLE_MYSQL_PORT=${dbPort}
-export CATTLE_DB_CATTLE_MYSQL_NAME=${dbName}
+export CATTLE_DB_CATTLE_DATABASE=mysql
+<#elseif db == "mssql">
+export CATTLE_DB_CATTLE_DATABASE=mssql
 <#else>
 export CATTLE_DB_CATTLE_DATABASE=postgres
+</#if>
 export CATTLE_DB_CATTLE_POSTGRES_HOST=${dbHost}
 export CATTLE_DB_CATTLE_POSTGRES_PORT=${dbPort}
 export CATTLE_DB_CATTLE_POSTGRES_NAME=${dbName}
-</#if>
+
 export CATTLE_DB_CATTLE_USERNAME=${dbUser}
 export CATTLE_DB_CATTLE_PASSWORD=${dbPass}
 
