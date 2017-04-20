@@ -175,6 +175,11 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>6.1.6.jre8-preview</version>
+        </dependency>
+        <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-service-discovery-server</artifactId>
             <version>${project.version}</version>
