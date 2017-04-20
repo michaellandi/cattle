@@ -48,17 +48,23 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 public class HaConfigManager extends AbstractNoOpResourceManager {
+	protected static DynamicStringProperty getDbSetting(String setting)
+	{
+		switch (DB.get()) {
+			case "mysql":
+				return ArchaiusUtil.getString("db.cattle.mysql." + setting);
+			case "mssql":
+				return ArchaiusUtil.getString("db.cattle.mssql." + setting);
+			default:
+				return ArchaiusUtil.getString("db.cattle.postgres." + setting); 
+				
+		}
+	}
 
     public static DynamicStringProperty DB = ArchaiusUtil.getString("db.cattle.database");
-    public static DynamicStringProperty DB_HOST = DB.get().equals("mysql")
-            ? ArchaiusUtil.getString("db.cattle.mysql.host")
-            : ArchaiusUtil.getString("db.cattle.postgres.host");
-    public static DynamicStringProperty DB_PORT = DB.get().equals("mysql")
-            ? ArchaiusUtil.getString("db.cattle.mysql.port")
-            : ArchaiusUtil.getString("db.cattle.postgres.port");
-    public static DynamicStringProperty DB_NAME = DB.get().equals("mysql")
-            ? ArchaiusUtil.getString("db.cattle.mysql.name")
-            : ArchaiusUtil.getString("db.cattle.postgres.name");
+    public static DynamicStringProperty DB_HOST = getDbSetting("host");
+    public static DynamicStringProperty DB_PORT = getDbSetting("port");
+    public static DynamicStringProperty DB_NAME = getDbSetting("name");
     public static DynamicStringProperty DB_USER = ArchaiusUtil.getString("db.cattle.username");
     public static DynamicStringProperty DB_PASS = ArchaiusUtil.getString("db.cattle.password");
     private static DynamicBooleanProperty HA_ENABLED = ArchaiusUtil.getBoolean("ha.enabled");
@@ -166,25 +172,47 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
 
         return new Object();
     }
+    
+    protected ProcessBuilder buildDbSizeProcess()
+    {
+    	switch (DB.get())
+    	{
+    		case "mysql":
+    			return new ProcessBuilder("mysql", "--skip-column-names", "-s", "-uroot", "-e",
+    	                "SELECT SUM(data_length)/power(1024,2) AS dbsize_mb FROM information_schema.tables WHERE table_schema='cattle' GROUP BY table_schema;");
+    		case "mssql":
+    			return new ProcessBuilder("mssql", "--help");
+    		default:
+    			return new ProcessBuilder("psql", "cattle", "cattle", "-t", "-q", "-c",
+    	                "SELECT pg_database_size('cattle')/power(1024,2)");
+    	}
+    }
 
     protected long dbSize() throws IOException  {
-        ProcessBuilder pb = DB.get().equals("mysql")
-                ? new ProcessBuilder("mysql", "--skip-column-names", "-s", "-uroot", "-e",
-                "SELECT SUM(data_length)/power(1024,2) AS dbsize_mb FROM information_schema.tables WHERE table_schema='cattle' GROUP BY table_schema;")
-                : new ProcessBuilder("psql", "cattle", "cattle", "-t", "-q", "-c",
-                "SELECT pg_database_size('cattle')/power(1024,2)");
+        ProcessBuilder pb = buildDbSizeProcess();
         pb.redirectError(Redirect.INHERIT);
         Process p = pb.start();
         try (InputStream in = p.getInputStream()) {
             return Long.parseLong(IOUtils.toString(in).split("[.]")[0].trim());
         }
     }
+    
+    protected ProcessBuilder buildDbDumpProcess()
+    {
+    	switch (DB.get())
+    	{
+	    	case "mysql":
+	    		return new ProcessBuilder("mysqldump", "-uroot", "cattle");
+	    	case "mssql":
+	    		return new ProcessBuilder("mssql", "--help");
+	    	default:
+	    		return new ProcessBuilder("pg_dump", "-Fc", "-Ucattle", "cattle");
+    	}
+    }
 
     protected Object dbDump(ApiRequest request) throws IOException, InterruptedException {
-        ProcessBuilder pb = DB.get().equals("mysql")
-                ? new ProcessBuilder("mysqldump", "-uroot", "cattle")
-                : new ProcessBuilder("pg_dump", "-Fc", "-Ucattle", "cattle");
-
+        ProcessBuilder pb = buildDbDumpProcess();
+        		
         pb.redirectError(Redirect.INHERIT);
 
         TimeZone tz = TimeZone.getTimeZone("UTC");
